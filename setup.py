@@ -13,17 +13,17 @@ from setuptools import setup
 install_reqs = ['requests>=1.1.0', 'ConcurrentLogHandler>=0.9.1']
 
 dist = setup(
-    name='multyvac',
-    version='0.5.0',
-    description='Multyvac for Python',      
-    author='Multyvac, Inc.',
-    author_email='dev@multyvac.com',
-    url='http://www.multyvac.com',
+    name='vac',
+    version='0.6.0',
+    description='Multyvac fork for Python',
+    author='Cloudpipe',
+    author_email='cloudpipe@googlegroups.com',
+    url='https://github.com/cloudpipe/multyvac-fork',
     install_requires=install_reqs,
     license='LICENSE.txt',
     packages=['multyvac', 'multyvac.util'],
     long_description=open('README.rst').read(),
-    platforms=['CPython 2.6', 'CPython 2.7'],      
+    platforms=['CPython 2.6', 'CPython 2.7'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
@@ -38,4 +38,3 @@ dist = setup(
         'Topic :: System :: Distributed Computing',
         ],
 )
-

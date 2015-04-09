@@ -12,44 +12,44 @@ class ConfigError(MultyvacError):
 
 class ConfigModule(MultyvacModule):
     """Top-level Config module. Use this through ``multyvac.config``."""
-    
+
     def __init__(self, multyvac, api_key=None, api_secret_key=None,
                  api_url=None):
         MultyvacModule.__init__(self, multyvac)
-        
+
         self.api_key = None
         self.api_secret_key = None
-        self.api_url = api_url or 'https://api.multyvac.com'
-        
+        self.api_url = api_url or 'https://cloudpipe.tmpnb.org/v1'
+
         self._target_uid = None
         self._target_gid = None
         self._detect_sudo()
-        
+
         self._multyvac_path = self.get_multyvac_path()
         self._create_path_ignore_existing(self._multyvac_path)
         self._config_name = 'multyvac.json'
         self._config_path = os.path.join(self._multyvac_path, self._config_name)
-        
+
         self._load_config()
-        
+
         if os.environ.get('MULTYVAC_API_KEY'):
             self.api_key = os.environ.get('MULTYVAC_API_KEY')
             if os.environ.get('MULTYVAC_API_SECRET_KEY'):
                 self.api_secret_key = os.environ.get('MULTYVAC_API_SECRET_KEY')
             if os.environ.get('MULTYVAC_API_URL'):
                 self.api_url = os.environ.get('MULTYVAC_API_URL')
-        
+
         self.api_key = api_key or self.api_key
         self.api_secret_key = api_secret_key or self.api_secret_key
-        self.api_url = api_url or self.api_url or 'https://api.multyvac.com'
-    
+        self.api_url = api_url or self.api_url or 'https://cloudpipe.tmpnb.org/v1'
+
     def _detect_sudo(self):
         """Determine if sudo is being used. If so, set the target uid/gid so
         that the permissions are set to the calling user."""
-        
+
         if os.name != 'posix':
             return
-        
+
         sudo_uid = os.getenv('SUDO_UID')
         sudo_gid = os.getenv('SUDO_GID', -1)
         sudo_user = os.getenv('SUDO_USER')
