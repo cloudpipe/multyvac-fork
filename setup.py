@@ -1,7 +1,3 @@
-# Guarantees that setuptools is available
-from ez_setup import use_setuptools
-use_setuptools()
-
 from setuptools import setup
 
 # We disable requirements.txt parsing for now since users are having problems
