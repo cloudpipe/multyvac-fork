@@ -102,21 +102,21 @@ class Multyvac(object):
         self.cluster = ClusterModule(self)
         from .api_key import ApiKeyModule
         self.api_key = ApiKeyModule(self)
-    
+
     def _setup_logger(self):
         """
         Sets up a rotating file logger.
         TODO: Have config option for printing to screen.
         """
-        
+
         logs_path = os.path.join(self.config.get_multyvac_path(), 'log')
         if not os.path.exists(logs_path):
             self.config._create_path_ignore_existing(logs_path)
         log_path = os.path.join(logs_path, 'multyvac.log')
-            
+
         self._logger = logging.getLogger('multyvac')
-        self._logger.setLevel(logging.INFO)
-    
+        self._logger.setLevel(logging.ERROR)
+
         if os.name == 'nt':
             from logging import FileHandler
             try:
