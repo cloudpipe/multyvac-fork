@@ -1,20 +1,18 @@
-========
-Multyvac
-========
+===
+vac
+===
 
-Multyvac gives Python developers a simple interface for offloading
-computational workloads to the cloud.
+Vac is a fork of Multyvac that gives Python developers a simple interface for
+offloading computational workloads to the cloud.
 
 Getting Started
 ===============
 
-You need to set an Api Key for your machine. To do this, run the following from your shell:
+Install vac:
 
-.. code-block:: bash
+.. code-block:: shell
 
-   $ python -m multyvac.setup
-   
-Follow the on screen instructions to complete the setup process.
+  pip install vac
 
 Verify Installation
 ---------------------
@@ -48,4 +46,3 @@ The idea is to take a function that you would normally run on your own machine, 
    >>> # verify the result is the same
    >>> job.result
    3
-   
