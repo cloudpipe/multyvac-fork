@@ -12,7 +12,7 @@ try:
         ConcurrentRotatingFileHandler as RotatingFileHandler
     )
 except ImportError:
-    from logging.handlers import RotatingFileHandler 
+    from logging.handlers import RotatingFileHandler
 
 import requests
 from requests.exceptions import ConnectionError
@@ -33,10 +33,10 @@ class RequestError(MultyvacError):
         self.message = message
         self.hint = hint
         self.retry = retry
-    
+
     def __str__(self):
         return '%s (Code: %s Hint: %s)' % (self.message, self.code, self.hint)
-    
+
     def __repr__(self):
         return 'RequestError({code}, "{message}", {hint})'.format(
                     code=self.code,
@@ -46,12 +46,12 @@ class RequestError(MultyvacError):
 
 class SyncError(MultyvacError):
     """Encapsulates errors when making rsync requests to Multyvac."""
-    
+
     def __init__(self, exit_status, message):
         Exception.__init__(self, exit_status, message)
         self.exit_status = exit_status
         self.message = message
-        
+
     def __repr__(self):
         return 'SyncError({exit_status}, "{message}")'.format(
                     exit_status=self.exit_status,
@@ -65,21 +65,21 @@ class Multyvac(object):
     The primary object for interacting with the Multyvac API.
     All Multyvac modules are exposed through this.
     """
-    
+
     _ASK_GET = 'GET'
     _ASK_POST = 'POST'
     _ASK_PUT = 'PUT'
     _ASK_PATCH = 'PATCH'
-    
+
     def __init__(self, api_key=None, api_secret_key=None, api_url=None):
         self._session = requests.session()
-        
+
         from .config import ConfigModule
         # Note: At this time, the rest of the Multyvac modules have not been
         # initialized. So the constructor should not do anything that requires
         # any other modules (ie. Do not use the ApiKey module).
         self.config = ConfigModule(self, api_key, api_secret_key, api_url)
-        
+
         if os.name == 'nt':
             self._rsync_bin = os.path.join(self.config.get_multyvac_path(),
                                            'bin/rsync.exe')
@@ -88,10 +88,10 @@ class Multyvac(object):
         else:
             self._rsync_bin = 'rsync'
             self._ssh_bin = 'ssh'
-        
+
         # Must be after config
         self._setup_logger()
-        
+
         from .job import JobModule
         self.job = JobModule(self)
         from .layer import LayerModule
@@ -142,13 +142,13 @@ class Multyvac(object):
         self.config._fix_permission(log_path)
         lock_path = os.path.join(logs_path, 'multyvac.lock')
         self.config._fix_permission(lock_path)
-        
+
         formatter = logging.Formatter(
             '[%(asctime)s] - [%(levelname)s] - %(name)s: %(message)s'
         )
         handler.setFormatter(formatter)
         self._logger.addHandler(handler)
-    
+
     def _get_session_method(self, method):
         """
         Returns a function that can be used to make an API request.
@@ -164,7 +164,7 @@ class Multyvac(object):
             return self._session.patch
         else:
             raise KeyError('Unknown method "%s"' % method)
-    
+
     def _log_ask(self, method, uri, params, data, headers, files):
         """Use this to log a request.  It only logs params and data elements
         that are not overly large to prevent filling up the log."""
@@ -174,7 +174,7 @@ class Multyvac(object):
                           self._log_ask_element(params),
                           self._log_ask_element(data),
                           [path for path, _ in files.values()] if files else None)
-    
+
     def _log_ask_element(self, ele):
         """Recurses into dict and list objects replacing elements that are too
         large for a log file. This way we still see small elements, but filter
@@ -192,12 +192,12 @@ class Multyvac(object):
             return 'Too large to log: %s bytes' % ele_size
         else:
             return ele
-    
+
     def _ask(self, method, uri, auth=None, params=None, data=None,
              headers=None, files=None, content_type_json=False):
         """
         Makes an HTTP request to Multyvac.
-        
+
         :param method: HTTP Verb.
         :param uri: Resource path.
         :param auth: Authentication override. If not specified, falls back to
@@ -218,7 +218,7 @@ class Multyvac(object):
             final_data = json.dumps(data)
         else:
             final_data = data
-        
+
         attempt = 0
         max_attempts = 5
         while True:
@@ -249,13 +249,13 @@ class Multyvac(object):
                     continue
                 else:
                     raise
-    
+
     def _ask_helper(self, method, uri, auth, params, data, headers, files):
         """See _ask()."""
-        
+
         if not auth:
             auth = self.config.get_auth()
-        
+
         r = self._get_session_method(method)(
                 self.config.api_url + uri,
                 auth=auth,
@@ -264,7 +264,7 @@ class Multyvac(object):
                 headers=headers,
                 files=files,
             )
-        
+
         try:
             obj = r.json()
         except ValueError:
@@ -287,24 +287,24 @@ class Multyvac(object):
                                obj['error']['message'],
                                obj['error'].get('hint'),
                                obj['error'].get('retry'))
-        
+
         return obj
-    
+
     def _sync_up(self, local_path, remote_address, remote_path, port):
         """Sync from local path to Multyvac."""
         dest = 'multyvac@{address}:{path}'.format(address=remote_address,
                                                   path=remote_path)
         return self._sync(local_path, dest, port)
-    
+
     def _sync_down(self, remote_address, remote_path, port, local_path):
         """Sync from Multyvac to local path."""
         src = 'multyvac@{address}:{path}'.format(address=remote_address,
                                                  path=remote_path)
         return self._sync(src, local_path, port)
-    
+
     def _sync(self, src, dest, port):
         """Sync from source to destination using rsync."""
-        
+
         attempt = 0
         max_attempts = 5
         while True:
@@ -321,13 +321,13 @@ class Multyvac(object):
                     continue
                 else:
                     raise
-    
+
     def _sync_helper(self, src, dest, port):
         """The port might apply to either the src or the dest, depending on
         which one is remote."""
-        
+
         on_windows = os.name == 'nt'
-        
+
         cmd = ('{rsync_bin} -avz -L -e "{ssh_bin} -o UserKnownHostsFile=/dev/null '
                '-o StrictHostKeyChecking=no -p {port} -i {key_path}" {chmod} '
                '{src} {dest}'.format(
@@ -351,12 +351,12 @@ class Multyvac(object):
         if p.poll() != 0:
             self._logger.info('Sync had error:\n%s',
                               stderr)
-            raise SyncError(p.poll(), stderr)        
-    
+            raise SyncError(p.poll(), stderr)
+
     def on_multyvac(self):
         """Returns True if this process is currently running on Multyvac."""
         return os.getenv('ON_MULTYVAC') == 'true'
-    
+
     def send_log_to_support(self):
         """Sends this machine's log file to Multyvac support."""
         log_path = os.path.join(self.config.get_multyvac_path(),
@@ -395,7 +395,7 @@ class MultyvacModule(object):
     @staticmethod
     def check_success(r):
         return r['status'] == 'ok'
-    
+
     @staticmethod
     def is_iterable_list(obj):
         return hasattr(obj, '__iter__')
@@ -411,7 +411,6 @@ class MultyvacModel(object):
             self.multyvac = multyvac
         else:
             raise Exception('Needs multyvac object for now')
-            
+
     def __str__(self):
         return repr(self)
-

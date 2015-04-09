@@ -61,11 +61,11 @@ class ConfigModule(MultyvacModule):
             if home_env == sudo_user_home:
                 self._target_uid = int(sudo_uid)
                 self._target_gid = int(sudo_gid)
-    
+
     def get_api_domain(self):
         """Returns the domain of the Multyvac API endpoint."""
         return self.api_url[self.api_url.index('//')+2:]
-    
+
     def get_multyvac_path(self):
         """Returns the path on the filesystem to the multyvac configuration
         directory."""
@@ -74,7 +74,7 @@ class ConfigModule(MultyvacModule):
         else:
             path = os.path.join('~', '.multyvac')
         return os.path.expanduser(path)
-    
+
     def _get_credentials_path(self, api_key=None):
         if api_key:
             return os.path.join(self._multyvac_path,
@@ -83,7 +83,7 @@ class ConfigModule(MultyvacModule):
         else:
             return os.path.join(self._multyvac_path,
                                 self.get_api_domain())
-    
+
     def _create_path_ignore_existing(self, path):
         """Create a path if it doesn't exist. Ignore any race condition errors
         if the path happens to be created while this is executing."""
@@ -95,7 +95,7 @@ class ConfigModule(MultyvacModule):
                 if e.errno != 17:
                     raise
             self._fix_permission(path)
-    
+
     def _fix_permission(self, path):
         """If sudo is used, this will attempt to correct the permissions of the
         path to be that of the calling user. However, this may not always be
@@ -108,14 +108,14 @@ class ConfigModule(MultyvacModule):
                 # Permission denied (13) is okay
                 if e.error not in (2, 13):
                     raise
-    
+
     def get_auth(self):
         """If a key is set, returns a tuple of (api key, api secret key).
         Otherwise, raises a ConfigError."""
         if not self.api_key:
             raise ConfigError('Api Key is not set')
         return (self.api_key, self.api_secret_key)
-        
+
     def path_to_private_key(self):
         """Returns the path on the file system to the private key necessary to
         SSH into a job. Note that this private key is tied to the currently
@@ -126,12 +126,12 @@ class ConfigModule(MultyvacModule):
         else:
             self._get_and_save_ssh_key(self.api_key)
             return private_key_path
-    
+
     def set_key(self, api_key, api_secret_key, api_url=None):
         """
         Sets the API credentials forcibly replacing any other credentials
         that have been set.
-        
+
         :param api_key: The ApiKey id.
         :param api_secret_key: The ApiKey secret.
         :param api_url: The API end point to use.
@@ -139,7 +139,7 @@ class ConfigModule(MultyvacModule):
         self.api_key = api_key
         self.api_secret_key = api_secret_key
         self.api_url = api_url or self.api_url
-    
+
     def _load_config(self):
         if os.path.exists(self._config_path):
             with open(self._config_path) as f:
@@ -151,7 +151,7 @@ class ConfigModule(MultyvacModule):
                     self._load_credential_from_disk(self.api_key)
         else:
             self.save_to_disk()
-        
+
     def _load_credential_from_disk(self, api_key):
         credential_path = self._get_credentials_path(api_key)
         if os.path.exists(credential_path + '.json'):
@@ -161,23 +161,23 @@ class ConfigModule(MultyvacModule):
         else:
             raise ConfigError('Could not find credentials for api_key '
                                       '%s on disk' % api_key)
-        
+
     def _get_and_save_ssh_key(self, api_key):
         """Assumes that the api_key and secret_key are valid"""
         key = self.multyvac.api_key.get(api_key)
         if not api_key:
             raise KeyError('Could not get find key.')
-        
+
         credentials_path = self._get_credentials_path()
         self._create_path_ignore_existing(credentials_path)
-        
+
         credential_path = self._get_credentials_path(api_key)
         credential_key_path = credential_path + '.key'
         with open(credential_key_path, 'w') as f:
             f.write(key.private_key)
         os.chmod(credential_key_path, 0600)
         self._fix_permission(credential_key_path)
-        
+
     def save_to_disk(self):
         """Saves the current configuration to disk. The next time multyvac
         is imported, the current configurations will be available."""
